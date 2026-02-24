@@ -1,21 +1,26 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { LoginPage } from "@/pages/LoginPage";
-import { authClient } from "@/lib/auth";
+import { useAuth } from "@/lib/AuthContext";
+
+function LoginRoute() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  // If already authenticated, redirect to home
+  if (isAuthenticated) {
+    return <Navigate to="/" />;
+  }
+
+  return <LoginPage />;
+}
 
 export const Route = createFileRoute("/login")({
-  beforeLoad: async () => {
-    try {
-      const { data } = await authClient.getSession();
-      if (data?.user) {
-        throw redirect({ to: "/" });
-      }
-    } catch (error) {
-      // If it's a redirect, rethrow it
-      if (error instanceof Error && "to" in error) {
-        throw error;
-      }
-      // For network errors, just show the login page
-    }
-  },
-  component: LoginPage,
+  component: LoginRoute,
 });
