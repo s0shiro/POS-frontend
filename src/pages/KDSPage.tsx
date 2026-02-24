@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/lib/AuthProvider";
+import { useAuth } from "@/lib/AuthContext";
 import { useSocket } from "@/hooks/useSocket";
 import { kdsApi, type KDSOrder } from "@/lib/api";
 import { Button } from "@/components/ui/button";
