@@ -1,10 +1,10 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/lib/AuthProvider";
 import {
   categoriesApi,
   menuItemsApi,
   ordersApi,
+  getImageUrl,
   type MenuItem,
   type Modifier,
   type CreateOrderPayload,
@@ -25,7 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import {
   Search,
   Plus,
@@ -39,7 +39,10 @@ import {
   Package,
   Truck,
   X,
-  LogOut,
+  Maximize,
+  Minimize,
+  Lock,
+  Unlock,
 } from "lucide-react";
 
 // Currency formatter for Philippine Peso
@@ -62,8 +65,15 @@ type OrderType = "dine_in" | "takeaway" | "delivery";
 type PaymentMethod = "cash" | "card" | "digital_wallet";
 
 export function CashierPage() {
-  const { user, signOut } = useAuth();
   const queryClient = useQueryClient();
+
+  // Fullscreen state
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+  const [dialogContainer, setDialogContainer] = useState<HTMLDivElement | null>(
+    null,
+  );
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // State
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -83,6 +93,64 @@ export function CashierPage() {
 
   // Refs
   const tableNumberRef = useRef<HTMLInputElement>(null);
+
+  // Set dialog container when component mounts
+  useEffect(() => {
+    setDialogContainer(containerRef.current);
+  }, []);
+
+  // Fullscreen handlers
+  const toggleFullscreen = useCallback(async () => {
+    if (!document.fullscreenElement) {
+      try {
+        await containerRef.current?.requestFullscreen();
+        setIsFullscreen(true);
+      } catch (err) {
+        toast.error("Failed to enter fullscreen mode");
+      }
+    } else {
+      if (!isLocked) {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      } else {
+        toast.warning("Fullscreen is locked. Unlock to exit.", {
+          description: "Click the lock icon to unlock",
+        });
+      }
+    }
+  }, [isLocked]);
+
+  const toggleLock = useCallback(() => {
+    if (!isFullscreen) {
+      toast.info("Enter fullscreen first to lock");
+      return;
+    }
+    setIsLocked((prev) => !prev);
+    toast.success(isLocked ? "Fullscreen unlocked" : "Fullscreen locked");
+  }, [isFullscreen, isLocked]);
+
+  // Listen for fullscreen changes (e.g., user presses Escape)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isCurrentlyFullscreen = !!document.fullscreenElement;
+      if (!isCurrentlyFullscreen && isLocked) {
+        // Re-enter fullscreen if locked
+        containerRef.current?.requestFullscreen().catch(() => {
+          setIsLocked(false);
+          setIsFullscreen(false);
+        });
+      } else {
+        setIsFullscreen(isCurrentlyFullscreen);
+        if (!isCurrentlyFullscreen) {
+          setIsLocked(false);
+        }
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, [isLocked]);
 
   // Queries
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
@@ -281,6 +349,13 @@ export function CashierPage() {
         return;
       }
 
+      // F11 - Toggle fullscreen
+      if (e.key === "F11") {
+        e.preventDefault();
+        toggleFullscreen();
+        return;
+      }
+
       // Don't trigger other shortcuts when typing in input fields
       if (
         e.target instanceof HTMLInputElement ||
@@ -299,6 +374,7 @@ export function CashierPage() {
       receivedAmount,
       total,
       clearCart,
+      toggleFullscreen,
     ],
   );
 
@@ -375,38 +451,62 @@ export function CashierPage() {
       : 0;
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Left Panel - Menu Items */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b bg-white px-6 py-4">
-          <div>
-            <h1 className="text-2xl font-bold">Cashier POS</h1>
-            <p className="text-sm text-muted-foreground">
-              Welcome, {user?.name || user?.email}
-            </p>
-          </div>
-          <Button variant="outline" size="sm" onClick={signOut}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
-          </Button>
-        </div>
+    <div
+      ref={containerRef}
+      className={`flex ${isFullscreen ? "h-screen" : "h-[calc(100vh-7rem)] -m-4 md:-m-6"} ${isFullscreen ? "bg-background" : ""}`}
+    >
+      {/* Toaster for fullscreen mode */}
+      {isFullscreen && <Toaster position="top-right" richColors />}
 
-        {/* Search */}
-        <div className="border-b bg-white p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search menu items..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
+      {/* Left Panel - Menu Items */}
+      <div className="flex flex-1 flex-col overflow-hidden border-r">
+        {/* Search & Fullscreen Controls */}
+        <div className="border-b bg-card p-4">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search menu items..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={toggleFullscreen}
+              title={
+                isFullscreen
+                  ? "Exit fullscreen (locked: click unlock first)"
+                  : "Enter fullscreen"
+              }
+            >
+              {isFullscreen ? (
+                <Minimize className="h-4 w-4" />
+              ) : (
+                <Maximize className="h-4 w-4" />
+              )}
+            </Button>
+            {isFullscreen && (
+              <Button
+                variant={isLocked ? "destructive" : "outline"}
+                size="icon"
+                onClick={toggleLock}
+                title={isLocked ? "Unlock fullscreen" : "Lock fullscreen"}
+              >
+                {isLocked ? (
+                  <Lock className="h-4 w-4" />
+                ) : (
+                  <Unlock className="h-4 w-4" />
+                )}
+              </Button>
+            )}
           </div>
         </div>
 
         {/* Categories */}
-        <div className="border-b bg-white p-4">
+        <div className="border-b bg-card p-4">
           {categoriesLoading ? (
             <div className="flex gap-2">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -462,7 +562,7 @@ export function CashierPage() {
       </div>
 
       {/* Right Panel - Cart */}
-      <div className="flex w-96 flex-col border-l bg-white">
+      <div className="flex w-96 flex-col border-l bg-card">
         <div className="border-b p-4">
           <div className="flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
@@ -553,7 +653,7 @@ export function CashierPage() {
         )}
 
         {/* Totals & Checkout */}
-        <div className="border-t bg-gray-50 p-4">
+        <div className="border-t bg-muted p-4">
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Subtotal</span>
@@ -599,7 +699,7 @@ export function CashierPage() {
 
       {/* Modifier Dialog */}
       <Dialog open={modifierDialogOpen} onOpenChange={setModifierDialogOpen}>
-        <DialogContent>
+        <DialogContent container={dialogContainer}>
           <DialogHeader>
             <DialogTitle>{selectedItem?.name}</DialogTitle>
             <DialogDescription>
@@ -617,7 +717,7 @@ export function CashierPage() {
                   className={`flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors ${
                     isSelected
                       ? "border-primary bg-primary/5"
-                      : "hover:bg-gray-50"
+                      : "hover:bg-muted"
                   }`}
                   onClick={() => {
                     setSelectedModifiers((prev) =>
@@ -651,7 +751,7 @@ export function CashierPage() {
 
       {/* Payment Dialog */}
       <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" container={dialogContainer}>
           <DialogHeader>
             <DialogTitle>Complete Payment</DialogTitle>
             <DialogDescription>
@@ -706,12 +806,12 @@ export function CashierPage() {
                   onChange={(e) => setReceivedAmount(e.target.value)}
                 />
                 {receivedAmount && changeAmount >= 0 && (
-                  <p className="mt-2 text-sm text-green-600">
+                  <p className="mt-2 text-sm text-green-600 dark:text-green-400">
                     Change: {formatCurrency(changeAmount)}
                   </p>
                 )}
                 {receivedAmount && changeAmount < 0 && (
-                  <p className="mt-2 text-sm text-red-600">
+                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">
                     Insufficient amount
                   </p>
                 )}
@@ -773,13 +873,13 @@ export function CashierPage() {
 function MenuItemCard({ item, onAdd }: { item: MenuItem; onAdd: () => void }) {
   return (
     <Card
-      className="cursor-pointer transition-shadow hover:shadow-md overflow-hidden"
+      className="cursor-pointer overflow-hidden transition-all hover:shadow-md hover:border-primary/50 hover:scale-[1.02] active:scale-[0.98]"
       onClick={onAdd}
     >
       <div className="aspect-[4/3] overflow-hidden bg-muted">
         {item.image ? (
           <img
-            src={item.image}
+            src={getImageUrl(item.image) || item.image}
             alt={item.name}
             className="h-full w-full object-cover"
           />
@@ -835,7 +935,7 @@ function CartItemCard({
   const totalPrice = (itemPrice + modifiersPrice) * item.quantity;
 
   return (
-    <div className="rounded-lg border p-3">
+    <div className="rounded-lg border p-3 transition-colors hover:bg-muted/50">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="font-medium">{item.menuItem.name}</p>
