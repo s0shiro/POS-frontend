@@ -1,4 +1,11 @@
-import { createRootRoute, Outlet, Link } from "@tanstack/react-router";
+import {
+  createRootRouteWithContext,
+  Outlet,
+  Link,
+  useRouterState,
+} from "@tanstack/react-router";
+import { AppLayout } from "@/components/layout";
+import type { RouterContext } from "@/router";
 // import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 
 function RootErrorComponent({ error }: { error: Error }) {
@@ -20,12 +27,30 @@ function RootErrorComponent({ error }: { error: Error }) {
   );
 }
 
-export const Route = createRootRoute({
-  component: () => (
-    <>
+// Routes that should NOT have the layout (full-screen pages)
+const noLayoutRoutes = ["/login", "/display", "/kds", "/unauthorized"];
+
+function RootComponent() {
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
+
+  // Check if current route should skip the layout
+  const shouldSkipLayout = noLayoutRoutes.some(
+    (route) => currentPath === route || currentPath.startsWith(route + "/"),
+  );
+
+  if (shouldSkipLayout) {
+    return <Outlet />;
+  }
+
+  return (
+    <AppLayout>
       <Outlet />
-      {/* {import.meta.env.DEV && <TanStackRouterDevtools />} */}
-    </>
-  ),
+    </AppLayout>
+  );
+}
+
+export const Route = createRootRouteWithContext<RouterContext>()({
+  component: RootComponent,
   errorComponent: RootErrorComponent,
 });

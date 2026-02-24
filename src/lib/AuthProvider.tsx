@@ -1,31 +1,36 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
+import { useEffect, useState, useCallback, type ReactNode } from "react";
+import { type QueryClient } from "@tanstack/react-query";
 import { authClient, type Session, type User } from "./auth";
+import { AuthContext } from "./AuthContext";
+import type { router as routerType } from "@/router";
 
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  signIn: typeof authClient.signIn;
-  signUp: typeof authClient.signUp;
-  signOut: () => Promise<void>;
-  refreshSession: () => Promise<void>;
+interface AuthProviderProps {
+  children: ReactNode;
+  queryClient: QueryClient;
+  router: typeof routerType;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
-
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({
+  children,
+  queryClient,
+  router,
+}: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const refreshSession = async () => {
+  // Update router context when user changes, but only after initial load
+  useEffect(() => {
+    router.update({
+      context: {
+        user,
+        isAuthenticated: !!user,
+        isLoading,
+      },
+    });
+  }, [user, router, isLoading]);
+
+  const refreshSession = useCallback(async () => {
     try {
       const { data } = await authClient.getSession();
       if (data) {
@@ -39,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(null);
       setUser(null);
     }
-  };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -75,12 +80,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
+    // Sign out from backend first
     await authClient.signOut();
+    // Clear state
     setUser(null);
     setSession(null);
-    // Navigation should be handled by the component calling signOut
-  };
+    // Clear all cached queries
+    queryClient.clear();
+    // Navigate to login - router context will be updated via useEffect
+    await router.navigate({ to: "/login", replace: true });
+  }, [queryClient, router]);
 
   return (
     <AuthContext.Provider
@@ -98,12 +108,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within AuthProvider");
-  }
-  return context;
 }

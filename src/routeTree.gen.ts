@@ -10,14 +10,25 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnauthorizedRouteImport } from './routes/unauthorized'
+import { Route as ReadyOrdersRouteImport } from './routes/ready-orders'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as KdsRouteImport } from './routes/kds'
+import { Route as DisplayRouteImport } from './routes/display'
 import { Route as CashierRouteImport } from './routes/cashier'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminSalesRouteImport } from './routes/admin/sales'
+import { Route as AdminMenuItemsRouteImport } from './routes/admin/menu-items'
+import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 
 const UnauthorizedRoute = UnauthorizedRouteImport.update({
   id: '/unauthorized',
   path: '/unauthorized',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReadyOrdersRoute = ReadyOrdersRouteImport.update({
+  id: '/ready-orders',
+  path: '/ready-orders',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -30,6 +41,11 @@ const KdsRoute = KdsRouteImport.update({
   path: '/kds',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DisplayRoute = DisplayRouteImport.update({
+  id: '/display',
+  path: '/display',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CashierRoute = CashierRouteImport.update({
   id: '/cashier',
   path: '/cashier',
@@ -40,43 +56,121 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSalesRoute = AdminSalesRouteImport.update({
+  id: '/admin/sales',
+  path: '/admin/sales',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminMenuItemsRoute = AdminMenuItemsRouteImport.update({
+  id: '/admin/menu-items',
+  path: '/admin/menu-items',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
+  id: '/admin/categories',
+  path: '/admin/categories',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cashier': typeof CashierRoute
+  '/display': typeof DisplayRoute
   '/kds': typeof KdsRoute
   '/login': typeof LoginRoute
+  '/ready-orders': typeof ReadyOrdersRoute
   '/unauthorized': typeof UnauthorizedRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/menu-items': typeof AdminMenuItemsRoute
+  '/admin/sales': typeof AdminSalesRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cashier': typeof CashierRoute
+  '/display': typeof DisplayRoute
   '/kds': typeof KdsRoute
   '/login': typeof LoginRoute
+  '/ready-orders': typeof ReadyOrdersRoute
   '/unauthorized': typeof UnauthorizedRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/menu-items': typeof AdminMenuItemsRoute
+  '/admin/sales': typeof AdminSalesRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/cashier': typeof CashierRoute
+  '/display': typeof DisplayRoute
   '/kds': typeof KdsRoute
   '/login': typeof LoginRoute
+  '/ready-orders': typeof ReadyOrdersRoute
   '/unauthorized': typeof UnauthorizedRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/menu-items': typeof AdminMenuItemsRoute
+  '/admin/sales': typeof AdminSalesRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/cashier' | '/kds' | '/login' | '/unauthorized'
+  fullPaths:
+    | '/'
+    | '/cashier'
+    | '/display'
+    | '/kds'
+    | '/login'
+    | '/ready-orders'
+    | '/unauthorized'
+    | '/admin/categories'
+    | '/admin/menu-items'
+    | '/admin/sales'
+    | '/admin/users'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cashier' | '/kds' | '/login' | '/unauthorized'
-  id: '__root__' | '/' | '/cashier' | '/kds' | '/login' | '/unauthorized'
+  to:
+    | '/'
+    | '/cashier'
+    | '/display'
+    | '/kds'
+    | '/login'
+    | '/ready-orders'
+    | '/unauthorized'
+    | '/admin/categories'
+    | '/admin/menu-items'
+    | '/admin/sales'
+    | '/admin/users'
+  id:
+    | '__root__'
+    | '/'
+    | '/cashier'
+    | '/display'
+    | '/kds'
+    | '/login'
+    | '/ready-orders'
+    | '/unauthorized'
+    | '/admin/categories'
+    | '/admin/menu-items'
+    | '/admin/sales'
+    | '/admin/users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CashierRoute: typeof CashierRoute
+  DisplayRoute: typeof DisplayRoute
   KdsRoute: typeof KdsRoute
   LoginRoute: typeof LoginRoute
+  ReadyOrdersRoute: typeof ReadyOrdersRoute
   UnauthorizedRoute: typeof UnauthorizedRoute
+  AdminCategoriesRoute: typeof AdminCategoriesRoute
+  AdminMenuItemsRoute: typeof AdminMenuItemsRoute
+  AdminSalesRoute: typeof AdminSalesRoute
+  AdminUsersRoute: typeof AdminUsersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -86,6 +180,13 @@ declare module '@tanstack/react-router' {
       path: '/unauthorized'
       fullPath: '/unauthorized'
       preLoaderRoute: typeof UnauthorizedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ready-orders': {
+      id: '/ready-orders'
+      path: '/ready-orders'
+      fullPath: '/ready-orders'
+      preLoaderRoute: typeof ReadyOrdersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -102,6 +203,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KdsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/display': {
+      id: '/display'
+      path: '/display'
+      fullPath: '/display'
+      preLoaderRoute: typeof DisplayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cashier': {
       id: '/cashier'
       path: '/cashier'
@@ -116,15 +224,49 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/sales': {
+      id: '/admin/sales'
+      path: '/admin/sales'
+      fullPath: '/admin/sales'
+      preLoaderRoute: typeof AdminSalesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/menu-items': {
+      id: '/admin/menu-items'
+      path: '/admin/menu-items'
+      fullPath: '/admin/menu-items'
+      preLoaderRoute: typeof AdminMenuItemsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/categories': {
+      id: '/admin/categories'
+      path: '/admin/categories'
+      fullPath: '/admin/categories'
+      preLoaderRoute: typeof AdminCategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CashierRoute: CashierRoute,
+  DisplayRoute: DisplayRoute,
   KdsRoute: KdsRoute,
   LoginRoute: LoginRoute,
+  ReadyOrdersRoute: ReadyOrdersRoute,
   UnauthorizedRoute: UnauthorizedRoute,
+  AdminCategoriesRoute: AdminCategoriesRoute,
+  AdminMenuItemsRoute: AdminMenuItemsRoute,
+  AdminSalesRoute: AdminSalesRoute,
+  AdminUsersRoute: AdminUsersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
