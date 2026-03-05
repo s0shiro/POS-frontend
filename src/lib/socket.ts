@@ -15,7 +15,11 @@ export const connectSocket = async (): Promise<Socket> => {
     throw new Error("Failed to generate socket auth token");
   }
 
-  socket = io(import.meta.env.VITE_API_URL || "http://localhost:3000", {
+  // WebSocket must connect directly to backend (can't be proxied through Vercel)
+  const socketUrl =
+    import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || "";
+
+  socket = io(socketUrl, {
     auth: { token: data.token },
   });
 
