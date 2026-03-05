@@ -87,7 +87,7 @@ export function ReadyOrdersPage() {
     mutationFn: (orderId: string) =>
       ordersApi.updateStatus(orderId, "completed"),
     onSuccess: (response) => {
-      toast.success(`Order #${response.data.orderNumber} completed!`);
+      toast.success(`Order ${response.data.orderNumber} completed!`);
       queryClient.invalidateQueries({ queryKey: ["ready-orders"] });
       // Clean up from uncalled orders set
       setUncalledOrders((prev) => {
@@ -115,7 +115,7 @@ export function ReadyOrdersPage() {
   const handleOrderReady = useCallback(
     (data: { id: string; orderNumber: string; tableNumber: string | null }) => {
       console.log("[ReadyOrders] New ready order:", data);
-      toast.info(`Order #${data.orderNumber} is ready!`, {
+      toast.info(`Order ${data.orderNumber} is ready!`, {
         icon: <Bell className="h-4 w-4" />,
         description: data.tableNumber ? `Table: ${data.tableNumber}` : "Pickup",
       });
@@ -178,7 +178,7 @@ export function ReadyOrdersPage() {
       audio.play().catch(() => {});
     } catch {}
 
-    toast.info(`Calling order #${order.orderNumber}`, {
+    toast.info(`Calling order ${order.orderNumber}`, {
       icon: <Megaphone className="h-4 w-4" />,
       description: order.tableNumber
         ? `Table ${order.tableNumber}`
@@ -198,7 +198,7 @@ export function ReadyOrdersPage() {
       });
     }
 
-    toast.info(`Order #${order.orderNumber} removed from display`);
+    toast.info(`Order ${order.orderNumber} removed from display`);
   };
 
   // Handle complete order
@@ -286,7 +286,7 @@ export function ReadyOrdersPage() {
                     <div className="flex items-start justify-between">
                       <div>
                         <CardTitle className="text-2xl font-bold">
-                          #{order.orderNumber}
+                          {order.orderNumber}
                         </CardTitle>
                         {order.tableNumber && (
                           <Badge variant="secondary" className="mt-1">
@@ -353,7 +353,9 @@ export function ReadyOrdersPage() {
 
                     {/* Total */}
                     <div className="flex items-center justify-between border-t pt-2">
-                      <span className="text-sm text-muted-foreground">Total</span>
+                      <span className="text-sm text-muted-foreground">
+                        Total
+                      </span>
                       <span className="font-bold">
                         {formatCurrency(parseFloat(order.totalAmount))}
                       </span>

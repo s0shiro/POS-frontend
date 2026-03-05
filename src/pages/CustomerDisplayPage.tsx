@@ -254,7 +254,7 @@ export function CustomerDisplayPage() {
                       index === 0 ? "text-green-400" : "text-white"
                     }`}
                   >
-                    #{order.orderNumber}
+                    {order.orderNumber}
                   </div>
 
                   {/* Table number if dine-in */}
