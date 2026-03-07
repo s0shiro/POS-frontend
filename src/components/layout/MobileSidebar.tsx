@@ -120,23 +120,25 @@ export function MobileSidebar({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-72 p-0">
+      <SheetContent side="left" className="w-72 p-0 flex flex-col">
         <SheetHeader className="flex h-16 flex-row items-center border-b px-4">
-          <SheetTitle className="flex items-center gap-2">
-            <UtensilsCrossed className="h-6 w-6 text-primary" />
-            <span>POS System</span>
+          <SheetTitle className="flex items-center gap-2 text-foreground">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+              <UtensilsCrossed className="h-5 w-5 text-primary" />
+            </div>
+            <span className="font-bold">POS System</span>
           </SheetTitle>
         </SheetHeader>
 
         <ScrollArea className="flex-1 px-3 py-4">
           <nav className="space-y-6">
-            {navSections.map((section) => {
+            {navSections.map((section, index) => {
               const filteredItems = filterItemsByRole(section.items);
               if (filteredItems.length === 0) return null;
 
               return (
                 <div key={section.title}>
-                  <h3 className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <h3 className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/70">
                     {section.title}
                   </h3>
                   <div className="space-y-1">
@@ -150,10 +152,10 @@ export function MobileSidebar({
                           to={item.href}
                           onClick={() => onOpenChange(false)}
                           className={cn(
-                            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150",
                             isActive
-                              ? "bg-primary text-primary-foreground"
-                              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                              ? "bg-primary/10 text-primary font-semibold"
+                              : "text-muted-foreground hover:bg-accent hover:text-foreground",
                           )}
                         >
                           <Icon className="h-5 w-5 shrink-0" />
@@ -162,8 +164,7 @@ export function MobileSidebar({
                       );
                     })}
                   </div>
-                  {section.title !==
-                    navSections[navSections.length - 1].title && (
+                  {index < navSections.length - 1 && (
                     <Separator className="mt-4" />
                   )}
                 </div>

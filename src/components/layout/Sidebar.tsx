@@ -130,18 +130,17 @@ export function Sidebar({
         )}
       >
         {/* Logo Section */}
-        <div className="flex h-16 items-center justify-between border-b px-4">
-          {!collapsed && (
-            <Link to="/" className="flex items-center gap-2">
-              <UtensilsCrossed className="h-6 w-6 text-primary" />
-              <span className="text-lg font-bold">POS System</span>
-            </Link>
-          )}
-          {collapsed && (
-            <Link to="/" className="mx-auto">
-              <UtensilsCrossed className="h-6 w-6 text-primary" />
-            </Link>
-          )}
+        <div className="flex h-16 items-center border-b px-4">
+          <Link
+            to="/"
+            className={cn(
+              "flex items-center gap-2 font-bold text-foreground hover:opacity-80 transition-opacity",
+              collapsed && "mx-auto",
+            )}
+          >
+            <UtensilsCrossed className="h-6 w-6 shrink-0 text-primary" />
+            {!collapsed && <span className="text-lg">POS System</span>}
+          </Link>
         </div>
 
         {/* Navigation */}
@@ -154,7 +153,7 @@ export function Sidebar({
               return (
                 <div key={section.title}>
                   {!collapsed && (
-                    <h3 className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <h3 className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/70">
                       {section.title}
                     </h3>
                   )}
@@ -167,10 +166,10 @@ export function Sidebar({
                         <Link
                           to={item.href}
                           className={cn(
-                            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150",
                             isActive
-                              ? "bg-primary text-primary-foreground"
-                              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                              ? "bg-primary/10 text-primary font-semibold"
+                              : "text-muted-foreground hover:bg-accent hover:text-foreground",
                             collapsed && "justify-center px-2",
                           )}
                         >
@@ -194,7 +193,10 @@ export function Sidebar({
 
                       return <div key={item.href}>{linkContent}</div>;
                     })}
-                  </div>
+                  </div>{" "}
+                  {navSections.indexOf(section) < navSections.length - 1 && (
+                    <Separator className="mt-4" />
+                  )}{" "}
                 </div>
               );
             })}
@@ -204,21 +206,31 @@ export function Sidebar({
         {/* Collapse Toggle */}
         <Separator />
         <div className="p-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onToggle}
-            className={cn("w-full", collapsed && "px-2")}
-          >
-            {collapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <>
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                Collapse
-              </>
-            )}
-          </Button>
+          {collapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onToggle}
+                  className="w-full px-2"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Expand sidebar</TooltipContent>
+            </Tooltip>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onToggle}
+              className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Collapse
+            </Button>
+          )}
         </div>
       </aside>
     </TooltipProvider>
