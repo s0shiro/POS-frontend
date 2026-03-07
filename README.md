@@ -1,73 +1,69 @@
-# React + TypeScript + Vite
+# Restaurant POS System - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive frontend for the Restaurant POS (Point of Sale) System. Built with React 19, this application provides an intuitive interface for cashiers, highly visible Kitchen Display System (KDS) for cooks, and comprehensive management dashboards for administrators.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Role-Based Access Control**: Tailored interfaces for `admin`, `cashier`, and `kitchen` staff.
+- **Real-Time Kitchen Display System (KDS)**: Instant order updates via Socket.IO.
+- **Order & Table Management**: Streamlined order intake and table status tracking.
+- **Payment Processing**: Immutable payment records and billing management.
+- **Modern UI/UX**: Clean, accessible, and responsive design powered by shadcn/ui and Tailwind CSS.
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Prerequisites
 
-## Expanding the ESLint configuration
+- Node.js 18+
+- npm or yarn
+- Running backend server (see `../backend/README.md`)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Installation
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1. Clone the repository and navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+3. Configure environment variables:
+   Create a `.env` file in the `frontend` directory:
+   ```env
+   VITE_API_URL=http://localhost:3000
+   ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Development
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- **Framework**: [React 19](https://react.dev/)
+- **Routing**: [TanStack Router](https://tanstack.com/router/latest)
+- **Data Fetching**: [TanStack Query](https://tanstack.com/query/latest)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) & [shadcn/ui](https://ui.shadcn.com/)
+
+### Available Scripts
+
+- `npm run dev` - Starts the Vite development server.
+- `npm run build` - Runs TypeScript checks and builds the app for production.
+- `npm run type-check` - Validates TypeScript.
+
+## Documentation & Support
+
+- Refer to the project's technical instructions in `.github/copilot-instructions.md`.
+- For component guidelines, see the `.github/instructions/frontend.instructions.md`.
+
+## Contributing
+
+1. Create a feature branch (`git checkout -b feature/amazing-feature`)
+2. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+3. Push to the branch (`git push origin feature/amazing-feature`)
+4. Open a Pull Request
+
+Please ensure your code follows the established ESLint and TypeScript configurations.
