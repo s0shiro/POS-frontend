@@ -78,7 +78,7 @@ export function KDSFeature() {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-gray-900 text-white">
+    <div className="flex h-screen flex-col bg-background text-foreground overflow-hidden">
       <KDSHeader
         currentTime={currentTime}
         userName={user?.name || "Kitchen Staff"}
@@ -89,31 +89,29 @@ export function KDSFeature() {
       />
 
       {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden divide-x divide-border">
         {/* Pending Orders Column */}
-        <div className="flex flex-1 border-r border-gray-700">
-          <OrdersColumn
-            title="Pending"
-            count={pendingOrders.length}
-            icon={<Clock className="h-5 w-5" />}
-            iconColor="text-yellow-500"
-            bgColor="bg-yellow-500/10"
-            orders={pendingOrders}
-            isLoading={isLoading}
-            emptyIcon={<Clock className="h-12 w-12" />}
-            emptyMessage="No pending orders"
-            onOrderAction={handleStartPreparing}
-            isActionPending={startPreparingMutation.isPending}
-          />
-        </div>
+        <OrdersColumn
+          title="Pending"
+          count={pendingOrders.length}
+          icon={<Clock className="h-5 w-5" />}
+          iconColor="text-amber-500 dark:text-amber-400"
+          bgColor="bg-amber-500/10 dark:bg-amber-500/20 text-amber-900 border-amber-200 dark:border-amber-900"
+          orders={pendingOrders}
+          isLoading={isLoading}
+          emptyIcon={<Clock className="h-12 w-12" />}
+          emptyMessage="No pending orders"
+          onOrderAction={handleStartPreparing}
+          isActionPending={startPreparingMutation.isPending}
+        />
 
         {/* Preparing Orders Column */}
         <OrdersColumn
           title="Preparing"
           count={preparingOrders.length}
           icon={<PlayCircle className="h-5 w-5" />}
-          iconColor="text-blue-500"
-          bgColor="bg-blue-500/10"
+          iconColor="text-blue-600 dark:text-blue-400"
+          bgColor="bg-blue-500/10 dark:bg-blue-500/20 text-blue-900 border-blue-200 dark:border-blue-900"
           orders={preparingOrders}
           isLoading={isLoading}
           emptyIcon={<PlayCircle className="h-12 w-12" />}
