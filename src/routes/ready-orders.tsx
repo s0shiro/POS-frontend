@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ReadyOrdersPage } from "@/pages/ReadyOrdersPage";
+import { ReadyOrdersFeature } from "@/features/ready-orders";
 import { AuthGuard } from "@/components/AuthGuard";
 
 export const Route = createFileRoute("/ready-orders")({
   component: () => (
     <AuthGuard allowedRoles={["admin", "cashier", "printer"]}>
-      <ReadyOrdersPage />
+      <ReadyOrdersFeature />
     </AuthGuard>
   ),
 });
