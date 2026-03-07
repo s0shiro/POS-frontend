@@ -16,23 +16,23 @@ export function CustomerDisplayFeature() {
   }, []);
 
   return (
-    <div className="dark min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
+    <div className="flex flex-col min-h-screen bg-background text-foreground overflow-hidden">
       <CustomerDisplayHeader
         isConnected={isConnected}
         currentTime={currentTime}
       />
 
       {/* Main content */}
-      <main className="p-8">
+      <main className="flex-1 p-8 overflow-y-auto mb-16">
         {calledOrders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-32">
-            <div className="flex h-32 w-32 items-center justify-center rounded-full bg-gray-800">
-              <Bell className="h-16 w-16 text-gray-600" />
+          <div className="flex h-full flex-col items-center justify-center">
+            <div className="flex h-40 w-40 items-center justify-center rounded-full bg-muted/50 border border-border/50 shadow-inner">
+              <Bell className="h-20 w-20 text-muted-foreground/50" />
             </div>
-            <h2 className="mt-8 text-3xl font-semibold text-gray-400">
+            <h2 className="mt-8 text-3xl font-black tracking-tight text-foreground/80">
               Waiting for orders...
             </h2>
-            <p className="mt-2 text-lg text-gray-500">
+            <p className="mt-3 text-xl font-medium text-muted-foreground">
               Your order number will appear here when ready
             </p>
           </div>

@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, RefreshCw } from "lucide-react";
+import { CheckCircle2, RefreshCw, Wifi, WifiOff } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface ReadyOrdersHeaderProps {
   orderCount: number;
@@ -13,38 +15,50 @@ export function ReadyOrdersHeader({
   onRefresh,
 }: ReadyOrdersHeaderProps) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-500/20">
-          <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b bg-card/50 backdrop-blur-xl p-6 rounded-2xl shadow-sm">
+      <div className="flex items-center gap-4">
+        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-900/50 shadow-inner">
+          <CheckCircle2 className="h-7 w-7" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">Ready Orders</h1>
-          <p className="text-sm text-muted-foreground">
-            {orderCount} order{orderCount !== 1 ? "s" : ""} ready for pickup
+          <h1 className="text-3xl font-black tracking-tight mb-0.5">
+            Ready Orders
+          </h1>
+          <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <span className="font-bold text-foreground bg-muted px-2 py-0.5 rounded-md">
+              {orderCount}
+            </span>
+            order{orderCount !== 1 ? "s" : ""} waiting for pickup
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         {/* Connection status */}
-        <div
-          className={`flex items-center gap-1 rounded-full px-2 py-1 text-xs ${
+        <Badge
+          variant="outline"
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold border shadow-sm",
             isConnected
-              ? "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400"
-              : "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400"
-          }`}
+              ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50"
+              : "bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border-red-200 dark:border-red-900/50",
+          )}
         >
-          <div
-            className={`h-2 w-2 rounded-full ${
-              isConnected ? "bg-green-500" : "bg-red-500"
-            }`}
-          />
-          {isConnected ? "Live" : "Offline"}
-        </div>
+          {isConnected ? (
+            <Wifi className="h-3.5 w-3.5" />
+          ) : (
+            <WifiOff className="h-3.5 w-3.5" />
+          )}
+          {isConnected ? "Connected" : "Offline"}
+        </Badge>
 
-        {/* Refresh button */}
-        <Button variant="outline" size="icon" onClick={onRefresh}>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={onRefresh}
+          className="shadow-sm hover:text-primary transition-colors"
+          title="Refresh orders"
+        >
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
