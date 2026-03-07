@@ -1,23 +1,26 @@
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { toast, Toaster } from "sonner";
+import { useCategories, useMenuItems } from "@/features/menu/api/useMenu";
 import {
-  categoriesApi,
-  menuItemsApi,
-  ordersApi,
-  getImageUrl,
-  type MenuItem,
-  type Modifier,
-  type CreateOrderPayload,
-} from "@/lib/api";
+  useCreateOrder,
+  useCreatePayment,
+} from "@/features/orders/api/useOrders";
+import type { MenuItem, Modifier } from "@/features/menu/types";
+import type { CreateOrderPayload } from "@/features/orders/types";
+import type { CartItem, OrderType, PaymentMethod } from "../types";
+import { MenuItemCard } from "./MenuItemCard";
+import { CartItemCard } from "./CartItemCard";
+import { useFullscreen } from "../hooks/useFullscreen";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
+import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -26,55 +29,25 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { toast, Toaster } from "sonner";
 import {
   Search,
-  Plus,
-  Minus,
-  Trash2,
   ShoppingCart,
-  CreditCard,
-  Banknote,
-  Smartphone,
   UtensilsCrossed,
   Package,
   Truck,
   X,
+  CreditCard,
+  Banknote,
+  Smartphone,
   Maximize,
   Minimize,
   Lock,
   Unlock,
 } from "lucide-react";
 
-// Currency formatter for Philippine Peso
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-  }).format(amount);
-};
-
-// Types for cart
-interface CartItem {
-  menuItem: MenuItem;
-  quantity: number;
-  notes?: string;
-  selectedModifiers: { id: string; name: string; price: number }[];
-}
-
-type OrderType = "dine_in" | "takeaway" | "delivery";
-type PaymentMethod = "cash" | "card" | "digital_wallet";
-
-export function CashierPage() {
-  const queryClient = useQueryClient();
-
-  // Fullscreen state
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isLocked, setIsLocked] = useState(false);
-  const [dialogContainer, setDialogContainer] = useState<HTMLDivElement | null>(
-    null,
-  );
-  const containerRef = useRef<HTMLDivElement>(null);
+export function CashierFeature() {
+  const { isFullscreen, isLocked, containerRef, toggleFullscreen, toggleLock } =
+    useFullscreen();
 
   // State
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -91,6 +64,9 @@ export function CashierPage() {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
   const [receivedAmount, setReceivedAmount] = useState("");
+  const [dialogContainer, setDialogContainer] = useState<HTMLDivElement | null>(
+    null,
+  );
 
   // Refs
   const tableNumberRef = useRef<HTMLInputElement>(null);
@@ -98,70 +74,13 @@ export function CashierPage() {
   // Set dialog container when component mounts
   useEffect(() => {
     setDialogContainer(containerRef.current);
-  }, []);
-
-  // Fullscreen handlers
-  const toggleFullscreen = useCallback(async () => {
-    if (!document.fullscreenElement) {
-      try {
-        await containerRef.current?.requestFullscreen();
-        setIsFullscreen(true);
-      } catch (err) {
-        toast.error("Failed to enter fullscreen mode");
-      }
-    } else {
-      if (!isLocked) {
-        await document.exitFullscreen();
-        setIsFullscreen(false);
-      } else {
-        toast.warning("Fullscreen is locked. Unlock to exit.", {
-          description: "Click the lock icon to unlock",
-        });
-      }
-    }
-  }, [isLocked]);
-
-  const toggleLock = useCallback(() => {
-    if (!isFullscreen) {
-      toast.info("Enter fullscreen first to lock");
-      return;
-    }
-    setIsLocked((prev) => !prev);
-    toast.success(isLocked ? "Fullscreen unlocked" : "Fullscreen locked");
-  }, [isFullscreen, isLocked]);
-
-  // Listen for fullscreen changes (e.g., user presses Escape)
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      const isCurrentlyFullscreen = !!document.fullscreenElement;
-      if (!isCurrentlyFullscreen && isLocked) {
-        // Re-enter fullscreen if locked
-        containerRef.current?.requestFullscreen().catch(() => {
-          setIsLocked(false);
-          setIsFullscreen(false);
-        });
-      } else {
-        setIsFullscreen(isCurrentlyFullscreen);
-        if (!isCurrentlyFullscreen) {
-          setIsLocked(false);
-        }
-      }
-    };
-
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () =>
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-  }, [isLocked]);
+  }, [containerRef]);
 
   // Queries
-  const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
-    queryKey: ["categories"],
-    queryFn: () => categoriesApi.getAll(),
-  });
-
-  const { data: menuItemsData, isLoading: menuItemsLoading } = useQuery({
-    queryKey: ["menuItems"],
-    queryFn: () => menuItemsApi.getAll({ isAvailable: true }),
+  const { data: categoriesData, isLoading: categoriesLoading } =
+    useCategories();
+  const { data: menuItemsData, isLoading: menuItemsLoading } = useMenuItems({
+    isAvailable: true,
   });
 
   const categories = categoriesData?.data ?? [];
@@ -196,25 +115,32 @@ export function CashierPage() {
   const total = subtotal + tax;
 
   // Mutations
-  const createOrderMutation = useMutation({
-    mutationFn: (data: CreateOrderPayload) => ordersApi.create(data),
-    onSuccess: (response) => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      return response.data;
-    },
-  });
+  const createOrderMutation = useCreateOrder();
+  const createPaymentMutation = useCreatePayment();
 
-  const createPaymentMutation = useMutation({
-    mutationFn: ({
-      orderId,
-      data,
-    }: {
-      orderId: string;
-      data: { method: PaymentMethod; tax: number; receivedAmount?: number };
-    }) => ordersApi.createPayment(orderId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-    },
+  // Clear cart helper
+  const clearCart = () => {
+    setCart([]);
+    setTableNumber("");
+    setOrderNotes("");
+    setOrderType("dine_in");
+  };
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    cart,
+    orderType,
+    tableNumber,
+    paymentDialogOpen,
+    modifierDialogOpen,
+    paymentMethod,
+    receivedAmount,
+    total,
+    clearCart,
+    toggleFullscreen,
+    setPaymentDialogOpen,
+    setModifierDialogOpen,
+    tableNumberRef,
   });
 
   // Handlers
@@ -285,104 +211,6 @@ export function CashierPage() {
   const removeFromCart = (index: number) => {
     setCart((prev) => prev.filter((_, i) => i !== index));
   };
-
-  const clearCart = useCallback(() => {
-    setCart([]);
-    setTableNumber("");
-    setOrderNotes("");
-    setOrderType("dine_in");
-  }, []);
-
-  // Keyboard shortcuts
-  const handleKeyboardShortcuts = useCallback(
-    (e: KeyboardEvent) => {
-      // Enter - Confirm payment (works even in input fields when payment dialog is open)
-      if (e.key === "Enter" && paymentDialogOpen) {
-        // For cash payments, check if amount is sufficient
-        if (paymentMethod === "cash") {
-          if (!receivedAmount || parseFloat(receivedAmount) < total) {
-            return; // Don't proceed if insufficient amount
-          }
-        }
-        e.preventDefault();
-        // Trigger payment via the button click
-        const confirmBtn = document.querySelector(
-          "[data-confirm-payment]",
-        ) as HTMLButtonElement;
-        if (confirmBtn && !confirmBtn.disabled) {
-          confirmBtn.click();
-        }
-        return;
-      }
-
-      // F9 - Open checkout/payment dialog (works from input fields)
-      if (e.key === "F9") {
-        e.preventDefault();
-        if (!paymentDialogOpen && cart.length > 0) {
-          if (orderType === "dine_in" && !tableNumber) {
-            toast.error("Please enter a table number for dine-in orders");
-            tableNumberRef.current?.focus();
-            return;
-          }
-          setPaymentDialogOpen(true);
-        }
-        return;
-      }
-
-      // F1 - Clear cart (works from input fields)
-      if (e.key === "F1") {
-        e.preventDefault();
-        if (cart.length > 0) {
-          clearCart();
-          toast.info("Cart cleared");
-        }
-        return;
-      }
-
-      // Escape - Close dialogs (works from input fields)
-      if (e.key === "Escape") {
-        if (paymentDialogOpen) {
-          setPaymentDialogOpen(false);
-        }
-        if (modifierDialogOpen) {
-          setModifierDialogOpen(false);
-        }
-        return;
-      }
-
-      // F11 - Toggle fullscreen
-      if (e.key === "F11") {
-        e.preventDefault();
-        toggleFullscreen();
-        return;
-      }
-
-      // Don't trigger other shortcuts when typing in input fields
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      ) {
-        return;
-      }
-    },
-    [
-      cart.length,
-      orderType,
-      tableNumber,
-      paymentDialogOpen,
-      modifierDialogOpen,
-      paymentMethod,
-      receivedAmount,
-      total,
-      clearCart,
-      toggleFullscreen,
-    ],
-  );
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyboardShortcuts);
-    return () => window.removeEventListener("keydown", handleKeyboardShortcuts);
-  }, [handleKeyboardShortcuts]);
 
   const handleCheckout = async () => {
     if (cart.length === 0) {
@@ -878,115 +706,6 @@ export function CashierPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
-
-// Menu Item Card Component
-function MenuItemCard({ item, onAdd }: { item: MenuItem; onAdd: () => void }) {
-  return (
-    <Card
-      className="cursor-pointer overflow-hidden p-0 gap-0 transition-all hover:shadow-md hover:border-primary/50 hover:scale-[1.02] active:scale-[0.98] flex flex-col"
-      onClick={onAdd}
-    >
-      <div className="aspect-video w-full overflow-hidden bg-muted">
-        {item.image ? (
-          <img
-            src={getImageUrl(item.image) || item.image}
-            alt={item.name}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <UtensilsCrossed className="h-8 w-8 text-muted-foreground/50" />
-          </div>
-        )}
-      </div>
-      <div className="p-3 flex flex-col flex-1">
-        <h3 className="font-semibold line-clamp-1 text-sm leading-tight mb-1">
-          {item.name}
-        </h3>
-        {item.description && (
-          <p className="line-clamp-2 text-xs text-muted-foreground mb-2 flex-1">
-            {item.description}
-          </p>
-        )}
-        <div className="mt-auto flex items-center justify-between pt-2">
-          <span className="font-bold text-primary text-sm">
-            {formatCurrency(parseFloat(item.price))}
-          </span>
-          {item.modifiers && item.modifiers.length > 0 && (
-            <Badge variant="outline" className="text-[10px] px-1 py-0">
-              +Options
-            </Badge>
-          )}
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-// Cart Item Card Component
-function CartItemCard({
-  item,
-  onIncrement,
-  onDecrement,
-  onRemove,
-}: {
-  item: CartItem;
-  onIncrement: () => void;
-  onDecrement: () => void;
-  onRemove: () => void;
-}) {
-  const itemPrice = parseFloat(item.menuItem.price);
-  const modifiersPrice = item.selectedModifiers.reduce(
-    (sum, mod) => sum + mod.price,
-    0,
-  );
-  const totalPrice = (itemPrice + modifiersPrice) * item.quantity;
-
-  return (
-    <div className="rounded-lg border p-3 transition-colors hover:bg-muted/50">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="font-medium">{item.menuItem.name}</p>
-          {item.selectedModifiers.length > 0 && (
-            <p className="text-xs text-muted-foreground">
-              {item.selectedModifiers.map((m) => m.name).join(", ")}
-            </p>
-          )}
-        </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6 text-muted-foreground hover:text-destructive"
-          onClick={onRemove}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-      <div className="mt-2 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-7 w-7"
-            onClick={onDecrement}
-          >
-            <Minus className="h-3 w-3" />
-          </Button>
-          <span className="w-8 text-center font-medium">{item.quantity}</span>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-7 w-7"
-            onClick={onIncrement}
-          >
-            <Plus className="h-3 w-3" />
-          </Button>
-        </div>
-        <span className="font-medium">{formatCurrency(totalPrice)}</span>
-      </div>
     </div>
   );
 }
