@@ -10,12 +10,13 @@ import {
   type CreateOrderPayload,
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
@@ -506,30 +507,34 @@ export function CashierPage() {
         </div>
 
         {/* Categories */}
-        <div className="border-b bg-card p-4">
+        <div className="border-b bg-card">
           {categoriesLoading ? (
-            <div className="flex gap-2">
+            <div className="flex gap-2 p-4">
               {Array.from({ length: 5 }).map((_, i) => (
                 <Skeleton key={i} className="h-9 w-24" />
               ))}
             </div>
           ) : (
-            <Tabs
-              value={selectedCategory}
-              onValueChange={(v) => setSelectedCategory(v as string)}
-            >
-              <TabsList className="h-auto flex-wrap">
-                <TabsTrigger value="all">All</TabsTrigger>
-                {categories
-                  .filter((c) => c.isActive)
-                  .sort((a, b) => a.sortOrder - b.sortOrder)
-                  .map((category) => (
-                    <TabsTrigger key={category.id} value={category.id}>
-                      {category.name}
-                    </TabsTrigger>
-                  ))}
-              </TabsList>
-            </Tabs>
+            <ScrollArea className="w-full whitespace-nowrap border-none">
+              <div className="flex w-max space-x-2 p-4">
+                <Tabs
+                  value={selectedCategory}
+                  onValueChange={(v) => setSelectedCategory(v as string)}
+                >
+                  <TabsList className="h-auto">
+                    <TabsTrigger value="all">All</TabsTrigger>
+                    {categories
+                      .filter((c) => c.isActive)
+                      .sort((a, b) => a.sortOrder - b.sortOrder)
+                      .map((category) => (
+                        <TabsTrigger key={category.id} value={category.id}>
+                          {category.name}
+                        </TabsTrigger>
+                      ))}
+                  </TabsList>
+                </Tabs>
+              </div>
+            </ScrollArea>
           )}
         </div>
 
@@ -578,35 +583,39 @@ export function CashierPage() {
         {/* Order Type Selection */}
         <div className="border-b p-4">
           <p className="mb-2 text-sm font-medium">Order Type</p>
-          <div className="grid grid-cols-3 gap-2">
-            <Button
-              variant={orderType === "dine_in" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setOrderType("dine_in")}
-              className="flex-col h-auto py-2"
+          <ToggleGroup
+            type="single"
+            value={orderType}
+            onValueChange={(value) => {
+              if (value) setOrderType(value as OrderType);
+            }}
+            className="grid grid-cols-3 gap-2"
+          >
+            <ToggleGroupItem
+              value="dine_in"
+              variant="outline"
+              className="flex-col h-auto py-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
             >
               <UtensilsCrossed className="mb-1 h-4 w-4" />
               Dine In
-            </Button>
-            <Button
-              variant={orderType === "takeaway" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setOrderType("takeaway")}
-              className="flex-col h-auto py-2"
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="takeaway"
+              variant="outline"
+              className="flex-col h-auto py-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
             >
               <Package className="mb-1 h-4 w-4" />
               Takeaway
-            </Button>
-            <Button
-              variant={orderType === "delivery" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setOrderType("delivery")}
-              className="flex-col h-auto py-2"
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="delivery"
+              variant="outline"
+              className="flex-col h-auto py-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
             >
               <Truck className="mb-1 h-4 w-4" />
               Delivery
-            </Button>
-          </div>
+            </ToggleGroupItem>
+          </ToggleGroup>
           {orderType === "dine_in" && (
             <Input
               ref={tableNumberRef}
@@ -653,7 +662,7 @@ export function CashierPage() {
         )}
 
         {/* Totals & Checkout */}
-        <div className="border-t bg-muted p-4">
+        <div className="sticky bottom-0 z-10 border-t bg-card p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Subtotal</span>
@@ -663,33 +672,37 @@ export function CashierPage() {
               <span className="text-muted-foreground">Tax (0%)</span>
               <span>{formatCurrency(tax)}</span>
             </div>
-            <Separator />
-            <div className="flex justify-between text-lg font-bold">
+            <Separator className="my-2" />
+            <div className="flex justify-between text-xl font-black">
               <span>Total</span>
-              <span>{formatCurrency(total)}</span>
+              <span className="text-primary">{formatCurrency(total)}</span>
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="mt-4 grid grid-cols-2 gap-3">
             <Button
-              variant="outline"
+              variant="destructive"
+              className="w-full text-base font-bold shadow-sm"
+              size="lg"
               onClick={clearCart}
               disabled={cart.length === 0}
               title="Clear cart (F1)"
             >
-              <X className="mr-2 h-4 w-4" />
-              Clear
-              <kbd className="ml-2 hidden rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:inline">
+              <X className="mr-2 h-5 w-5" />
+              CLEAR
+              <kbd className="ml-2 hidden rounded bg-black/20 px-2 py-1 text-[11px] font-medium sm:inline">
                 F1
               </kbd>
             </Button>
             <Button
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-base font-bold shadow-sm"
+              size="lg"
               onClick={handleCheckout}
               disabled={cart.length === 0 || createOrderMutation.isPending}
               title="Checkout (F9)"
             >
-              <CreditCard className="mr-2 h-4 w-4" />
-              Checkout
-              <kbd className="ml-2 hidden rounded bg-primary-foreground/20 px-1.5 py-0.5 text-[10px] font-medium sm:inline">
+              <CreditCard className="mr-2 h-5 w-5" />
+              PAY
+              <kbd className="ml-2 hidden rounded bg-black/20 px-2 py-1 text-[11px] font-medium sm:inline">
                 F9
               </kbd>
             </Button>
@@ -873,10 +886,10 @@ export function CashierPage() {
 function MenuItemCard({ item, onAdd }: { item: MenuItem; onAdd: () => void }) {
   return (
     <Card
-      className="cursor-pointer overflow-hidden transition-all hover:shadow-md hover:border-primary/50 hover:scale-[1.02] active:scale-[0.98]"
+      className="cursor-pointer overflow-hidden p-0 gap-0 transition-all hover:shadow-md hover:border-primary/50 hover:scale-[1.02] active:scale-[0.98] flex flex-col"
       onClick={onAdd}
     >
-      <div className="aspect-[4/3] overflow-hidden bg-muted">
+      <div className="aspect-video w-full overflow-hidden bg-muted">
         {item.image ? (
           <img
             src={getImageUrl(item.image) || item.image}
@@ -889,18 +902,16 @@ function MenuItemCard({ item, onAdd }: { item: MenuItem; onAdd: () => void }) {
           </div>
         )}
       </div>
-      <CardHeader className="px-2 pt-1.5 pb-0 space-y-0">
-        <CardTitle className="line-clamp-1 text-sm leading-tight">
+      <div className="p-3 flex flex-col flex-1">
+        <h3 className="font-semibold line-clamp-1 text-sm leading-tight mb-1">
           {item.name}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-2 pt-0 pb-1.5">
+        </h3>
         {item.description && (
-          <p className="line-clamp-1 text-xs text-muted-foreground mb-1">
+          <p className="line-clamp-2 text-xs text-muted-foreground mb-2 flex-1">
             {item.description}
           </p>
         )}
-        <div className="flex items-center justify-between">
+        <div className="mt-auto flex items-center justify-between pt-2">
           <span className="font-bold text-primary text-sm">
             {formatCurrency(parseFloat(item.price))}
           </span>
@@ -910,7 +921,7 @@ function MenuItemCard({ item, onAdd }: { item: MenuItem; onAdd: () => void }) {
             </Badge>
           )}
         </div>
-      </CardContent>
+      </div>
     </Card>
   );
 }
