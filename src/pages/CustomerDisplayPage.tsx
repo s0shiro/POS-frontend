@@ -12,7 +12,9 @@ import {
   WifiOff,
 } from "lucide-react";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+// WebSocket must connect directly to backend (can't be proxied through Vercel)
+const SOCKET_URL =
+  import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || "";
 
 interface CalledOrder {
   id: string;
@@ -106,7 +108,7 @@ export function CustomerDisplayPage() {
 
   // Connect to customer display namespace (no auth required)
   useEffect(() => {
-    const socket = io(`${API_URL}/customer-display`, {
+    const socket = io(`${SOCKET_URL}/customer-display`, {
       transports: ["polling", "websocket"],
       withCredentials: false,
     });
