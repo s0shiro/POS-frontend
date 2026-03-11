@@ -10,6 +10,7 @@ import {
   UtensilsCrossed,
   DollarSign,
   Users,
+  KeyRound,
 } from "lucide-react";
 import {
   Sheet,
@@ -91,6 +92,12 @@ const navSections: NavSection[] = [
         href: "/admin/sales",
         icon: DollarSign,
         roles: ["admin"],
+      },
+      {
+        title: "API Keys",
+        href: "/admin/api-keys",
+        icon: KeyRound,
+        roles: ["admin", "kitchen", "printer"],
       },
     ],
   },

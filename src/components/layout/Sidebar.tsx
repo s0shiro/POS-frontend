@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   DollarSign,
+  KeyRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -94,6 +95,12 @@ const navSections: NavSection[] = [
         href: "/admin/sales",
         icon: DollarSign,
         roles: ["admin"],
+      },
+      {
+        title: "API Keys",
+        href: "/admin/api-keys",
+        icon: KeyRound,
+        roles: ["admin", "kitchen", "printer"],
       },
     ],
   },

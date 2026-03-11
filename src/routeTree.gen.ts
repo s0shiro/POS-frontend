@@ -20,6 +20,7 @@ import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminSalesRouteImport } from './routes/admin/sales'
 import { Route as AdminMenuItemsRouteImport } from './routes/admin/menu-items'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
+import { Route as AdminApiKeysRouteImport } from './routes/admin/api-keys'
 
 const UnauthorizedRoute = UnauthorizedRouteImport.update({
   id: '/unauthorized',
@@ -76,6 +77,11 @@ const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
   path: '/admin/categories',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminApiKeysRoute = AdminApiKeysRouteImport.update({
+  id: '/admin/api-keys',
+  path: '/admin/api-keys',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/ready-orders': typeof ReadyOrdersRoute
   '/unauthorized': typeof UnauthorizedRoute
+  '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/menu-items': typeof AdminMenuItemsRoute
   '/admin/sales': typeof AdminSalesRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/ready-orders': typeof ReadyOrdersRoute
   '/unauthorized': typeof UnauthorizedRoute
+  '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/menu-items': typeof AdminMenuItemsRoute
   '/admin/sales': typeof AdminSalesRoute
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/ready-orders': typeof ReadyOrdersRoute
   '/unauthorized': typeof UnauthorizedRoute
+  '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/menu-items': typeof AdminMenuItemsRoute
   '/admin/sales': typeof AdminSalesRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/ready-orders'
     | '/unauthorized'
+    | '/admin/api-keys'
     | '/admin/categories'
     | '/admin/menu-items'
     | '/admin/sales'
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/ready-orders'
     | '/unauthorized'
+    | '/admin/api-keys'
     | '/admin/categories'
     | '/admin/menu-items'
     | '/admin/sales'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/ready-orders'
     | '/unauthorized'
+    | '/admin/api-keys'
     | '/admin/categories'
     | '/admin/menu-items'
     | '/admin/sales'
@@ -167,6 +179,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ReadyOrdersRoute: typeof ReadyOrdersRoute
   UnauthorizedRoute: typeof UnauthorizedRoute
+  AdminApiKeysRoute: typeof AdminApiKeysRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminMenuItemsRoute: typeof AdminMenuItemsRoute
   AdminSalesRoute: typeof AdminSalesRoute
@@ -252,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCategoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/api-keys': {
+      id: '/admin/api-keys'
+      path: '/admin/api-keys'
+      fullPath: '/admin/api-keys'
+      preLoaderRoute: typeof AdminApiKeysRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -263,6 +283,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ReadyOrdersRoute: ReadyOrdersRoute,
   UnauthorizedRoute: UnauthorizedRoute,
+  AdminApiKeysRoute: AdminApiKeysRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminMenuItemsRoute: AdminMenuItemsRoute,
   AdminSalesRoute: AdminSalesRoute,
