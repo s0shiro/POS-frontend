@@ -5,7 +5,7 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
-  createdAt: string;
+  createdAt: Date | string;
   banned: boolean | null;
 }
 
