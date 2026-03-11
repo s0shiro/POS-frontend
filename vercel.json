@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://pos-backend-m81a.onrender.com/api/:path*"
+      "destination": "https://restaurant-pos-backend-4941234254c5.herokuapp.com/api/:path*"
     },
     {
       "source": "/uploads/:path*",
-      "destination": "https://pos-backend-m81a.onrender.com/uploads/:path*"
+      "destination": "https://restaurant-pos-backend-4941234254c5.herokuapp.com/uploads/:path*"
     },
     {
       "source": "/((?!api|uploads|assets).*)",
